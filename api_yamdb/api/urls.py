@@ -1,4 +1,3 @@
-
 from rest_framework import routers
 from django.urls import include, path
 
@@ -11,5 +10,5 @@ router.register(r'genres', GenreViewSet, basename='genres')
 router.register(r'titles', TitleViewSet, basename='titles')
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('v1/', include(router.urls)),
 ]

@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 
+<<<<<<< HEAD
 from .serializers import (
     CategorySerializer, GenreSerializer,
     TitleSerializer
@@ -23,3 +24,16 @@ class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Title."""
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
+=======
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    pass
+
+
+class GenreViewSet(viewsets.ModelViewSet):
+    pass
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    pass
+>>>>>>> develop

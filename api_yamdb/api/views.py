@@ -8,6 +8,16 @@ from reviews.models import Review, Title
 from .serializers import CommentSerializer, ReviewSerializer
 
 
+class CategoryViewSet(viewsets.ModelViewSet):
+    pass
+
+
+class GenreViewSet(viewsets.ModelViewSet):
+    pass
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    pass
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer

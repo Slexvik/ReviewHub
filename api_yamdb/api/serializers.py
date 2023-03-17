@@ -10,7 +10,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('name', 'slug',)
+        exclude = ('id', )
+        lookup_field = 'slug'
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -18,27 +19,17 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = '__all__'
+        exclude = ('id', )
+        lookup_field = 'slug'
 
 
 class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Title."""
-    category = SlugRelatedField(slug_field='slug', read_only=True)
-    genre = GenreSerializer(required=False, many=True)
+    category = SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+        )
 
     class Meta:
         model = Title
         fields = '__all__'
-
-    def create(self, validated_data):
-        if 'genre' not in self.initial_data:
-            raise ValidationError('Поле "genre" является обязательным!')
-        
-        genres = validated_data.pop('genre')
-        title = Title.objects.create(**validated_data)
-        for genre in genres:
-            current_genre, status = Genre.objects.get(**genre)
-            GenreTitle.objects.create(
-                genre=current_genre, title=title
-                    )
-        return title

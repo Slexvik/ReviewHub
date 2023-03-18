@@ -1,7 +1,9 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from django.db import models
+
+User = get_user_model()
 
 
 class Genre(models.Model):
@@ -69,7 +71,7 @@ class Review(models.Model):
         ordering = ['-pub_date']
         constraints = [
             models.UniqueConstraint(
-                fields=('title', 'author'), name='unique_title_author'
+                fields=('title_id', 'author'), name='unique_title_author'
             )
         ]
         verbose_name = 'Отзыв'
@@ -77,6 +79,7 @@ class Review(models.Model):
 
     def __str__(self):
         return f'{self.author} - {self.text[:30]}'
+
 
 class Comment(models.Model):
     review_id = models.ForeignKey(
@@ -99,7 +102,6 @@ class Comment(models.Model):
         db_index=True,
         verbose_name='Дата публикации',
     )
-
 
     class Meta:
         ordering = ['-pub_date']

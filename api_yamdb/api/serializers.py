@@ -1,12 +1,15 @@
-from django.core.exceptions import ValidationError
+import datetime as dt
+
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from reviews.models import Category, Genre, GenreTitle, Title
+from reviews.models import Category, Comment, Genre, Review, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Category."""
+    """Сериализатор для категорий."""
 
     class Meta:
         model = Category
@@ -15,7 +18,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Genre."""
+    """Сериализатор для жанров."""
 
     class Meta:
         model = Genre
@@ -23,21 +26,55 @@ class GenreSerializer(serializers.ModelSerializer):
         lookup_field = 'slug'
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Title."""
+class TitleReadSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для возвращения одного произведения
+    или списка произведений.
+    """
     category = SlugRelatedField(
         slug_field='slug',
-        queryset=Category.objects.all()
-        )
+        queryset=Category.objects.all(),
+    )
+    genre = SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all(),
+        many=True,
+    )
+    rating = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = Title
+        fields = ('id', 'name', 'year', 'rating',
+                  'description', 'genre', 'category')
+
+
+class TitleWriteSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для добавления, редактирования
+    и удаления произведений.
+    """
+    category = SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all(),
+    )
+    genre = SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all(),
+        many=True,
+    )
 
     class Meta:
         model = Title
         fields = '__all__'
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.shortcuts import get_object_or_404
-from rest_framework import serializers
 
-from reviews.models import Comment, Review, Title
+    def validate_year(self, value):
+        """Проверка, что год создания произведения не больше текущего."""
+        year = dt.date.today().year
+        if not year <= value:
+            raise serializers.ValidationError(
+                'Год создания произведения не может быть больше текущего!'
+            )
+        return value
 
 
 class CommentSerializer(serializers.ModelSerializer):

@@ -1,34 +1,66 @@
 from statistics import mean
+
 from django.shortcuts import get_object_or_404
-
-from rest_framework import viewsets
+from django.db.models.aggregates import Avg
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, viewsets
 from rest_framework.pagination import PageNumberPagination
-from reviews.models import Review, Title
+from reviews.models import Category, Genre, Review, Title
 
-from .serializers import CommentSerializer, ReviewSerializer
-
+from .mixins import CrLiDeViewSet
 from .serializers import (
-    CategorySerializer, GenreSerializer,
-    TitleSerializer
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
+    ReviewSerializer,
+    TitleReadSerializer,
+    TitleWriteSerializer,
 )
-from reviews.models import Category, Genre, Title
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
-    """Вьюсет для модели Category."""
+class CategoryViewSet(CrLiDeViewSet):
+    """Вьюсет для категорий."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    filter_backends = (filters.SearchFilter,)
+    pagination_class = PageNumberPagination
     lookup_field = 'slug'
+    search_fields = ('name',)
 
-class GenreViewSet(viewsets.ModelViewSet):
-    """Вьюсет для модели Genre."""
+
+class GenreViewSet(CrLiDeViewSet):
+    """Вьюсет для жанров."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    filter_backends = (filters.SearchFilter,)
+    pagination_class = PageNumberPagination
     lookup_field = 'slug'
+    search_fields = ('name',)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    pass
+    """Вьюсет для произведений."""
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')).all()
+    filter_backends = (DjangoFilterBackend,)
+    pagination_class = PageNumberPagination
+    filterset_fields = (
+        'category__slug',
+        'genre__slug',
+        'name',
+        'year',
+    )
+
+    def get_serializer_class(self):
+        """
+        В случае возвращения произведения или списка произведений
+        используется сериализатор TitleReadSerializer.
+        Для остальных случаев - TitleWriteSerializer.
+        """
+        if self.action == 'list' or 'retrieve':
+            return TitleReadSerializer
+        return TitleWriteSerializer
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer

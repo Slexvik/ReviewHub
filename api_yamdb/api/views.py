@@ -5,6 +5,8 @@ from django.db.models.aggregates import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 from rest_framework.pagination import PageNumberPagination
+from users.permissions import (AuthenticatedPrivilegedUsersOrReadOnly,
+                               ListOrAdminModeratOnly)
 from reviews.models import Category, Genre, Review, Title
 
 from .mixins import CrLiDeViewSet

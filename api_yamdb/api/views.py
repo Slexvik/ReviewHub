@@ -25,6 +25,7 @@ class CategoryViewSet(CrLiDeViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     filter_backends = (filters.SearchFilter,)
+    permission_classes = (ListOrAdminModeratOnly,)
     pagination_class = PageNumberPagination
     lookup_field = 'slug'
     search_fields = ('name',)
@@ -35,6 +36,7 @@ class GenreViewSet(CrLiDeViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     filter_backends = (filters.SearchFilter,)
+    permission_classes = (ListOrAdminModeratOnly,)
     pagination_class = PageNumberPagination
     lookup_field = 'slug'
     search_fields = ('name',)
@@ -45,6 +47,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')).all()
     filter_backends = (DjangoFilterBackend,)
+    permission_classes = (ListOrAdminModeratOnly,)
     pagination_class = PageNumberPagination
     filterset_fields = (
         'category__slug',
@@ -68,7 +71,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = PageNumberPagination
-    permission_classes = ('''IsAdminModeratorOwnerOrReadOnly,''')
+    permission_classes = (AuthenticatedPrivilegedUsersOrReadOnly,)
 
     def create_or_update(self, serializer):
         title = self.get_title()
@@ -100,7 +103,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     pagination_class = PageNumberPagination
-    permission_classes = ('''IsAdminModeratorOwnerOrReadOnly,''')
+    # permission_classes = ('''IsAdminModeratorOwnerOrReadOnly,''')  как было
+    permission_classes = (AuthenticatedPrivilegedUsersOrReadOnly,)
 
     def get_review(self):
         title_id = self.kwargs.get("title_id")

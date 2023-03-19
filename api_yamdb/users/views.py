@@ -4,12 +4,13 @@ from string import digits
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
-from rest_framework import status, viewsets, filters
+from rest_framework import status, viewsets, filters, generics, mixins
 from rest_framework.decorators import action, api_view
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from django.shortcuts import get_object_or_404
 
 from .permissions import AdminAndSuperuserOnly
 from .serializers import CreateUserSerializer, UserSerializer
@@ -19,13 +20,14 @@ User = get_user_model()
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    http_method_names = ['get', 'patch', 'post', 'delete']
     queryset = User.objects.all()
     lookup_field = 'username'
     pagination_class = LimitOffsetPagination
     permission_classes = (AdminAndSuperuserOnly,)
     serializer_class = UserSerializer
-    search_fields = ('username',)
     filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
 
     @action(
         detail=False,
@@ -33,21 +35,20 @@ class UserViewSet(viewsets.ModelViewSet):
         url_path='me',
         permission_classes=[IsAuthenticated, ]
     )
-    def me_profile(self, request, pk=None):
-        username = request.user.username
-        user = User.objects.get(username=username)
+    def me(self, request, pk=None):
+        user = get_object_or_404(User, username=self.request.user)
+        serializer = UserSerializer(user)
         if request.method == 'PATCH':
             serializer = UserSerializer(
                 user, data=request.data,
                 partial=True,
                 context={'request': request}
             )
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-        serializer = UserSerializer(user)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
         return Response(serializer.data)
-
-
+  
+  
 @api_view(['POST'])
 def create_user(request):
     serializer = CreateUserSerializer(data=request.data)

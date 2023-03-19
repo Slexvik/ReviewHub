@@ -74,7 +74,7 @@ DATABASES = {
 
 # Password validation
 AUTH_USER_MODEL = 'users.User'
-# AUTH_PROFILE_MODULE = 'users.User'
+AUTH_PROFILE_MODULE = 'users.User'
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -131,4 +131,4 @@ SIMPLE_JWT = {
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'email/')
-ADMIN_EMAIL = 'admin@yamdb.ru'
+DEFAULT_EMAIL = 'review@yamdb.info'

@@ -5,6 +5,8 @@ from django.db.models.aggregates import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 from rest_framework.pagination import PageNumberPagination
+from users.permissions import (IsAdminModeratorAuthorOrReadOnly,
+                               IsAdminOrReadOnly)
 from reviews.models import Category, Genre, Review, Title
 
 from .mixins import CrLiDeViewSet
@@ -22,20 +24,17 @@ class CategoryViewSet(CrLiDeViewSet):
     """Вьюсет для категорий."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    filter_backends = (filters.SearchFilter,)
-    pagination_class = PageNumberPagination
-    lookup_field = 'slug'
-    search_fields = ('name',)
 
 
 class GenreViewSet(CrLiDeViewSet):
     """Вьюсет для жанров."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    filter_backends = (filters.SearchFilter,)
-    pagination_class = PageNumberPagination
-    lookup_field = 'slug'
-    search_fields = ('name',)
+    # filter_backends = (filters.SearchFilter,)
+    # permission_classes = (IsAdminOrReadOnly,)
+    # pagination_class = PageNumberPagination
+    # lookup_field = 'slug'
+    # search_fields = ('name',)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -43,6 +42,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')).all()
     filter_backends = (DjangoFilterBackend,)
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
     filterset_fields = (
         'category__slug',
@@ -62,11 +62,10 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleWriteSerializer
 
 
-
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = PageNumberPagination
-    permission_classes = ('''IsAdminModeratorOwnerOrReadOnly,''')
+    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def create_or_update(self, serializer):
         title = self.get_title()
@@ -89,16 +88,17 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         self.create_or_update(serializer)
 
-    def get_permissions(self):
-        if self.action == "retrieve":
-            return ('''ReadOnly(),''')
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     if self.action == "retrieve":
+    #         return ('''ReadOnly(),''')
+    #     return super().get_permissions()
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     pagination_class = PageNumberPagination
-    permission_classes = ('''IsAdminModeratorOwnerOrReadOnly,''')
+    # permission_classes = ('''IsAdminModeratorOwnerOrReadOnly,''')  как было
+    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def get_review(self):
         title_id = self.kwargs.get("title_id")
@@ -114,7 +114,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         review = self.get_review()
         serializer.save(author=self.request.user, review=review)
 
-    def get_permissions(self):
-        if self.action == "retrieve":
-            return ('''ReadOnly(),''')
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     if self.action == "retrieve":
+    #         return ('''ReadOnly(),''')
+    #     return super().get_permissions()

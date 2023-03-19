@@ -4,7 +4,7 @@ from string import digits
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, filters
 from rest_framework.decorators import action, api_view
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
@@ -14,15 +14,18 @@ from rest_framework_simplejwt.tokens import AccessToken
 from .permissions import AdminAndSuperuserOnly
 from .serializers import CreateUserSerializer, UserSerializer
 
+from .models import User
 User = get_user_model()
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    lookup_field = 'username'
     queryset = User.objects.all()
+    lookup_field = 'username'
+    pagination_class = LimitOffsetPagination
     permission_classes = (AdminAndSuperuserOnly,)
     serializer_class = UserSerializer
-    pagination_class = LimitOffsetPagination
+    search_fields = ('username',)
+    filter_backends = (filters.SearchFilter,)
 
     @action(
         detail=False,

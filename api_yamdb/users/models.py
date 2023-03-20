@@ -27,6 +27,9 @@ class User(AbstractUser):
         default=USER_ROLE,
         blank=True
     )
+    confirmation_code = models.CharField(
+        blank=True, max_length=6, 
+        verbose_name='Код подтверждения')
 
     class Meta():
         db_table = 'user'

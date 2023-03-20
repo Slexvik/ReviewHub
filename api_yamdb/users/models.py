@@ -29,6 +29,7 @@ class User(AbstractUser):
     )
 
     class Meta():
+        db_table = 'user'
         verbose_name = 'Пользователя'
         verbose_name_plural = 'пользователи'
         ordering = ('username',)

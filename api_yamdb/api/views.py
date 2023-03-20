@@ -52,7 +52,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         используется сериализатор TitleReadSerializer.
         Для остальных случаев - TitleWriteSerializer.
         """
-        if self.action == 'list' or 'retrieve':
+        if self.action in ('list', 'retrieve'):
             return TitleReadSerializer
         return TitleWriteSerializer
 

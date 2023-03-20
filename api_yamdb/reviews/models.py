@@ -22,6 +22,8 @@ class Genre(models.Model):
     )
 
     class Meta:
+        db_table = 'genre'
+        ordering = ['-id']
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -42,6 +44,8 @@ class Category(models.Model):
     )
 
     class Meta:
+        db_table = 'category'
+        ordering = ['-id']
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -61,6 +65,7 @@ class Title(models.Model):
     description = models.TextField(
         verbose_name='Описание произведения',
         blank=True,
+        null=True,
     )
     genre = models.ManyToManyField(
         Genre,
@@ -72,31 +77,36 @@ class Title(models.Model):
         Category,
         verbose_name='Категория произведения',
         on_delete=models.SET_NULL,
+        blank=True,
         null=True,
         related_name='titles',
     )
 
     class Meta:
+        db_table = 'title'
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
     def __str__(self):
         return self.name
-
+ 
 
 class GenreTitle(models.Model):
     """Модель связи произведения с жанрами."""
-    genre = models.ForeignKey(
-        Genre,
-        verbose_name='Жанр',
-        on_delete=models.CASCADE,
-    )
     title = models.ForeignKey(
         Title,
         verbose_name='Произведение',
         on_delete=models.CASCADE
     )
+    genre = models.ForeignKey(
+        Genre,
+        verbose_name='Жанр',
+        on_delete=models.CASCADE,
+    )
 
+    class Meta:
+        db_table = 'genre_title'
+ 
 
 class Review(models.Model):
     title = models.ForeignKey(
@@ -127,6 +137,7 @@ class Review(models.Model):
     )
 
     class Meta:
+        db_table = 'review'
         ordering = ['-pub_date']
         constraints = [
             models.UniqueConstraint(
@@ -163,6 +174,7 @@ class Comment(models.Model):
     )
 
     class Meta:
+        db_table = 'comment'
         ordering = ['-pub_date']
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'

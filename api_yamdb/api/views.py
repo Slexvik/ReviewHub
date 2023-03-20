@@ -1,10 +1,11 @@
 from statistics import mean
 
+import django_filters
 from django.shortcuts import get_object_or_404
 from django.db.models.aggregates import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 from users.permissions import (IsAdminModeratorAuthorOrReadOnly,
                                IsAdminOrReadOnly)
 from reviews.models import Category, Genre, Review, Title
@@ -18,6 +19,18 @@ from .serializers import (
     TitleReadSerializer,
     TitleWriteSerializer,
 )
+
+# Если будут какие-то вопросы или претензии, пишите в телегу @koyote92
+# Вынести в api/filters.py, если не придумаете свой способ.
+class TitleFilter(django_filters.FilterSet):
+    genre = django_filters.CharFilter(field_name='genre__slug')
+    category = django_filters.CharFilter(field_name='category__slug')
+    year = django_filters.NumberFilter(field_name='year')
+    name = django_filters.CharFilter(field_name='name', lookup_expr='contains')
+
+    class Meta:
+        model = Title
+        fields = '__all__'
 
 
 class CategoryViewSet(CrLiDeViewSet):
@@ -39,38 +52,28 @@ class GenreViewSet(CrLiDeViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для произведений."""
-    queryset = Title.objects.annotate(
-        rating=Avg('reviews__score')).all()
+    queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
     permission_classes = (IsAdminOrReadOnly,)
-    pagination_class = PageNumberPagination
-    filterset_fields = (
-        'category__slug',
-        'genre__slug',
-        'name',
-        'year',
-    )
+    filterset_class = TitleFilter
+    filter_backends = (DjangoFilterBackend, )
+    pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):
-        """
-        В случае возвращения произведения или списка произведений
-        используется сериализатор TitleReadSerializer.
-        Для остальных случаев - TitleWriteSerializer.
-        """
-        if self.action == 'list' or 'retrieve':
-            return TitleReadSerializer
-        return TitleWriteSerializer
+        if self.request.method in ('POST', 'PATCH', 'PUT'):
+            return TitleWriteSerializer
+        return TitleReadSerializer
 
 
-
+# Ревью и комменты сыпались на тестах из-за неработающего Title, сейчас всё работает.
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    pagination_class = PageNumberPagination
+    pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def get_queryset(self):
         title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        return title.reviews
+        return title.reviews.all()
     
     def perform_create(self, serializer):
         title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -81,12 +84,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     pagination_class = PageNumberPagination
-    # permission_classes = ('''IsAdminModeratorOwnerOrReadOnly,''')  как было
     permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def get_queryset(self):
         review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
-        return review.comments
+        return review.comments.all()
 
     def perform_create(self, serializer):
         review = get_object_or_404(Review, id=self.kwargs.get('review_id'))

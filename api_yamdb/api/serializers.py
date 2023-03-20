@@ -7,96 +7,83 @@ from rest_framework.relations import SlugRelatedField
 from reviews.models import Category, Comment, Genre, Review, Title
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    """Сериализатор для категорий."""
-
-    class Meta:
-        model = Category
-        exclude = ('id', )
-        lookup_field = 'slug'
-
-
 class GenreSerializer(serializers.ModelSerializer):
-    """Сериализатор для жанров."""
-
     class Meta:
         model = Genre
-        exclude = ('id', )
-        lookup_field = 'slug'
+        exclude = ('id',)
 
 
-class TitleReadSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для возвращения одного произведения
-    или списка произведений.
-    """
-    category = SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all(),
-    )
-    genre = SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all(),
-        many=True,
-    )
-    rating = serializers.IntegerField(required=False)
-
+class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Title
-        fields = ('id', 'name', 'year', 'rating',
-                  'description', 'genre', 'category')
+        model = Category
+        exclude = ('id',)
+
+
+class ObjectField(serializers.SlugRelatedField):
+
+    def to_representation(self, obj):
+        return {
+            'name': obj.name,
+            'slug': obj.slug,
+        }
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для добавления, редактирования
-    и удаления произведений.
-    """
-    category = SlugRelatedField(
+    genre = ObjectField(
         slug_field='slug',
-        queryset=Category.objects.all(),
-    )
-    genre = SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all(),
+        queryset=Genre.objects.all(),
         many=True,
+    )
+    category = ObjectField(
+        slug_field='slug',
+        queryset=Category.objects.all(),
     )
 
     class Meta:
         model = Title
         fields = '__all__'
 
-    def validate_year(self, value):
-        """Проверка, что год создания произведения не больше текущего."""
-        year = dt.date.today().year
-        if not year <= value:
+    def validate_year(self, data):
+        if data >= dt.date.today().year:
             raise serializers.ValidationError(
-                'Год создания произведения не может быть больше текущего!'
+                'Год выпуска произведения должен быть меньше текущего.'
             )
-        return value
+        return data
+
+
+class TitleReadSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
+    rating = serializers.ReadOnlyField()
+
+    class Meta:
+        fields = '__all__'
+        model = Title
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    review = serializers.SlugRelatedField(
+        slug_field='text',
+        read_only=True
+    )
     author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='username',
+        read_only=True, slug_field='username'
     )
 
     class Meta:
-        model = Comment
         fields = '__all__'
+        model = Comment
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
+        default=serializers.CurrentUserDefault(),
     )
-    score = serializers.IntegerField(
-        validators=(
-            MinValueValidator(1, 'Оценка не может быть меньше 1.'),
-            MaxValueValidator(10, 'Оценка не может быть выше 10.'),
-        )
+    title = serializers.SlugRelatedField(
+        slug_field='name',
+        read_only=True,
     )
 
     class Meta:
@@ -105,10 +92,10 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if self.context['request'].method != 'POST':
-            return data
-        title = self.context['view'].kwargs.get('title')
+            return data 
+        title_id = self.context['request'].parser_context['kwargs']['title_id']
         author = self.context['request'].user
-        if Review.objects.filter(title=title, author=author).exists():
+        if Review.objects.filter(title=title_id, author=author).exists():
             raise serializers.ValidationError(
                 'Можно оставить только один отзыв на произведение'
             )

@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from django.db import models
+from django.db.models import Avg
 
 User = get_user_model()
 
@@ -75,6 +76,13 @@ class Title(models.Model):
         null=True,
         related_name='titles',
     )
+    rating = models.DecimalField(
+        null=True,
+        blank=True,
+        max_digits=2,
+        decimal_places=2,
+        verbose_name='Рейтинг',
+    )
 
     class Meta:
         verbose_name = 'Произведение'
@@ -83,6 +91,12 @@ class Title(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def rating(self):
+        rating = self.reviews.aggregate(Avg('score')).get('score__avg')
+        if rating:
+            return round(rating, 2)
+        return
 
 class GenreTitle(models.Model):
     """Модель связи произведения с жанрами."""

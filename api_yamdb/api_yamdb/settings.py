@@ -109,6 +109,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
+CSV_DIRS = BASE_DIR / 'static/data/'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -130,5 +131,5 @@ SIMPLE_JWT = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'email/')
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'email/')  # подумать можно ли перевести на метод Path
 DEFAULT_EMAIL = 'review@yamdb.info'

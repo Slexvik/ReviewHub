@@ -1,7 +1,6 @@
 import datetime as dt
 
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
@@ -54,12 +53,13 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     и удаления произведений.
     """
     category = SlugRelatedField(
-        slug_field='slug',
         queryset=Category.objects.all(),
+        slug_field='slug',
+        
     )
     genre = SlugRelatedField(
-        slug_field='slug',
         queryset=Category.objects.all(),
+        slug_field='slug',
         many=True,
     )
 
@@ -70,7 +70,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     def validate_year(self, value):
         """Проверка, что год создания произведения не больше текущего."""
         year = dt.date.today().year
-        if not year <= value:
+        if not year < value:
             raise serializers.ValidationError(
                 'Год создания произведения не может быть больше текущего!'
             )
@@ -80,37 +80,36 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
-        slug_field='username'
+        slug_field='username',
     )
 
     class Meta:
         model = Comment
-        fields = ('id', 'text', 'author', 'pub_date')
+        fields = '__all__'
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
-        slug_field='username'
+        slug_field='username',
     )
     score = serializers.IntegerField(
         validators=(
             MinValueValidator(1, 'Оценка не может быть меньше 1.'),
-            MaxValueValidator(10, 'Оценка не может быть выше 10.')
+            MaxValueValidator(10, 'Оценка не может быть выше 10.'),
         )
     )
 
     class Meta:
         model = Review
-        fields = ('id', 'author', 'text', 'score', 'pub_date')
+        fields = '__all__'
 
     def validate(self, data):
         if self.context['request'].method != 'POST':
             return data
-        title_id = self.context['view'].kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
-        user = self.context['request'].user
-        if Review.objects.filter(title=title, author=user).exists():
+        title = self.context['view'].kwargs.get('title')
+        author = self.context['request'].user
+        if Review.objects.filter(title=title, author=author).exists():
             raise serializers.ValidationError(
                 'Можно оставить только один отзыв на произведение'
             )

@@ -1,7 +1,7 @@
 from rest_framework import filters, mixins, viewsets
 from rest_framework.pagination import PageNumberPagination
 
-from users.permissions import IsAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly
 
 
 class CrLiDeViewSet(mixins.CreateModelMixin,

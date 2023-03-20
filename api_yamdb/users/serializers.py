@@ -9,11 +9,11 @@ class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email')
-
+    
     def validate_username(self, value):
         if value.lower() == 'me':
             raise serializers.ValidationError(
-                'Имя пользователя не может быть "me"'
+                'Имя пользователя "me" не разрешено'
             )
         return value
 

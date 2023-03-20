@@ -4,12 +4,13 @@ from string import digits
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
-from rest_framework import status, viewsets, filters
+from rest_framework import status, viewsets, filters, generics, mixins
 from rest_framework.decorators import action, api_view
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from django.shortcuts import get_object_or_404
 
 from .permissions import AdminAndSuperuserOnly
 from .serializers import CreateUserSerializer, UserSerializer
@@ -19,47 +20,47 @@ User = get_user_model()
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    http_method_names = ('get', 'patch', 'post', 'delete')
     queryset = User.objects.all()
     lookup_field = 'username'
     pagination_class = LimitOffsetPagination
     permission_classes = (AdminAndSuperuserOnly,)
+    filter_backends = (filters.SearchFilter,)
     serializer_class = UserSerializer
     search_fields = ('username',)
-    filter_backends = (filters.SearchFilter,)
 
     @action(
-        detail=False,
-        methods=['get', 'patch'],
+        methods=('get', 'patch'),
         url_path='me',
-        permission_classes=[IsAuthenticated, ]
+        detail=False,
+        permission_classes=(IsAuthenticated,)
     )
-    def me_profile(self, request, pk=None):
-        username = request.user.username
-        user = User.objects.get(username=username)
+    def me(self, request):
+        user = get_object_or_404(User, username=self.request.user)
+        serializer = UserSerializer(user)
         if request.method == 'PATCH':
             serializer = UserSerializer(
                 user, data=request.data,
                 partial=True,
                 context={'request': request}
             )
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-        serializer = UserSerializer(user)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
         return Response(serializer.data)
-
-
+  
+  
 @api_view(['POST'])
 def create_user(request):
     serializer = CreateUserSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    confirmation_code = ''.join(random.choices(digits, k=6))
+    confirmation_code = ''.join(random.choices(digits, k=6)) # по возможности прикрутить другую библиотеку
     serializer.save(confirmation_code=confirmation_code)
 
     send_mail(
-        subject='Registration from YaMDb',
+        subject='Registration on YaMDb',
         message=f'Your confirmation code is {confirmation_code}',
-        from_email=settings.ADMIN_EMAIL,
+        from_email=settings.DEFAULT_EMAIL,
         recipient_list=(request.data['email'],))
 
     return Response(
@@ -74,7 +75,7 @@ def create_token(request):
 
     if not username or not confirmation_code:
         return Response(
-            'Одно или несколько обязательных полей пропущены',
+            'Не заполнены обязательные поля',
             status=status.HTTP_400_BAD_REQUEST
         )
 

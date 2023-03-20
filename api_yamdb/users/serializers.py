@@ -5,20 +5,6 @@ from .validators import ValidateUsername
 User = get_user_model()
 
 
-# class CreateUserSerializer(serializers.ModelSerializer):
-
-#     class Meta:
-#         model = User
-#         fields = ('username', 'email')
-    
-#     def validate_username(self, value):
-#         if value.lower() == 'me':
-#             raise serializers.ValidationError(
-#                 'Имя пользователя "me" не разрешено'
-#             )
-#         return value
-
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -40,14 +26,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RegistrationSerializer(serializers.Serializer, ValidateUsername):
-    """Сериализатор регистрации User"""
+    """Сериализатор регистрации User."""
 
     username = serializers.CharField(required=True, max_length=150)
     email = serializers.EmailField(required=True, max_length=254)
 
 
 class TokenSerializer(serializers.Serializer, ValidateUsername):
-    """Сериализатор токена"""
+    """Сериализатор токена."""
 
     username = serializers.CharField(required=True, max_length=150)
     confirmation_code = serializers.CharField(required=True)

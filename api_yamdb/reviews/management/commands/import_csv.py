@@ -5,14 +5,14 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 data = (
-            (f'{settings.CSV_DIRS}/users.csv', 'user'),
-            (f'{settings.CSV_DIRS}/category.csv', 'category'),
-            (f'{settings.CSV_DIRS}/genre.csv', 'genre'),
-            (f'{settings.CSV_DIRS}/titles.csv', 'title'),
-            (f'{settings.CSV_DIRS}/genre_title.csv', 'genre_title'),
-            (f'{settings.CSV_DIRS}/review.csv', 'review'),
-            (f'{settings.CSV_DIRS}/comments.csv', 'comment'),            
-        )
+    (f'{settings.CSV_DIRS}/users.csv', 'user'),
+    (f'{settings.CSV_DIRS}/category.csv', 'category'),
+    (f'{settings.CSV_DIRS}/genre.csv', 'genre'),
+    (f'{settings.CSV_DIRS}/titles.csv', 'title'),
+    (f'{settings.CSV_DIRS}/genre_title.csv', 'genre_title'),
+    (f'{settings.CSV_DIRS}/review.csv', 'review'),
+    (f'{settings.CSV_DIRS}/comments.csv', 'comment'),
+)
 
 
 class Command(BaseCommand):

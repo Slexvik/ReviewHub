@@ -5,7 +5,7 @@ from django.db.models.aggregates import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 from rest_framework.pagination import PageNumberPagination
-from users.permissions import (IsAdminModeratorAuthorOrReadOnly,
+from .permissions import (IsAdminModeratorAuthorOrReadOnly,
                                IsAdminOrReadOnly)
 from reviews.models import Category, Genre, Review, Title
 
@@ -30,11 +30,6 @@ class GenreViewSet(CrLiDeViewSet):
     """Вьюсет для жанров."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    # filter_backends = (filters.SearchFilter,)
-    # permission_classes = (IsAdminOrReadOnly,)
-    # pagination_class = PageNumberPagination
-    # lookup_field = 'slug'
-    # search_fields = ('name',)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -60,7 +55,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action == 'list' or 'retrieve':
             return TitleReadSerializer
         return TitleWriteSerializer
-
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

@@ -5,7 +5,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
-from rest_framework import status, viewsets, filters 
+from rest_framework import status, viewsets, filters
 from rest_framework.decorators import action, api_view
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.exceptions import ValidationError
@@ -13,14 +13,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
-from .permissions import AdminAndSuperuserOnly
-from .serializers import UserSerializer, TokenSerializer, RegistrationSerializer
+from api.permissions import AdminAndSuperuserOnly
+from .serializers import (UserSerializer, TokenSerializer,
+                          RegistrationSerializer)
 
-from .models import User
 User = get_user_model()
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """Вьюсет для создания юзера,
+    пользователя может добавить администратор."""
     http_method_names = ('get', 'patch', 'post', 'delete')
     queryset = User.objects.all()
     lookup_field = 'username'
@@ -51,7 +53,9 @@ class UserViewSet(viewsets.ModelViewSet):
   
   
 @api_view(['POST'])
-def create_user(request):
+def signup_user(request):
+    """Функция создания кода подтверждения,
+    отправляет код на email."""
     serializer = RegistrationSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     try:
@@ -72,7 +76,8 @@ def create_user(request):
 
 @api_view(['POST'])
 def create_token(request):
-    """Функция выдачи токена"""
+    """Функция выдачи токена, доступ для всех,
+    отправялет JWT-токена в обмен на username и confirmation code."""
 
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)

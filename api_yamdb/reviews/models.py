@@ -130,7 +130,7 @@ class Review(models.Model):
         ordering = ['-pub_date']
         constraints = [
             models.UniqueConstraint(
-                fields=('title_id', 'author'), name='unique_title_author'
+                fields=('title', 'author'), name='unique_title_author'
             )
         ]
         verbose_name = 'Отзыв'

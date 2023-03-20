@@ -27,11 +27,11 @@ class User(AbstractUser):
         default=USER_ROLE,
         blank=True
     )
-    confirmation_code = models.CharField(
-        verbose_name='Код подтверждения',
-        max_length=6,
-        blank=True,
-    )
+    # confirmation_code = models.CharField(
+    #     verbose_name='Код подтверждения',
+    #     max_length=6,
+    #     blank=True,
+    # )
 
     class Meta():
         verbose_name = 'Пользователя'
@@ -49,3 +49,6 @@ class User(AbstractUser):
     @property
     def is_moderator(self):
         return self.role == MODERATOR_ROLE
+    
+    def __str__(self):
+        return self.username

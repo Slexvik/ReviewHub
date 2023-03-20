@@ -53,12 +53,13 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     и удаления произведений.
     """
     category = SlugRelatedField(
-        slug_field='slug',
         queryset=Category.objects.all(),
+        slug_field='slug',
+        
     )
     genre = SlugRelatedField(
-        slug_field='slug',
         queryset=Category.objects.all(),
+        slug_field='slug',
         many=True,
     )
 
@@ -69,7 +70,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     def validate_year(self, value):
         """Проверка, что год создания произведения не больше текущего."""
         year = dt.date.today().year
-        if not year <= value:
+        if not year < value:
             raise serializers.ValidationError(
                 'Год создания произведения не может быть больше текущего!'
             )

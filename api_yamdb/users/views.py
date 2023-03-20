@@ -15,7 +15,6 @@ from django.shortcuts import get_object_or_404
 from .permissions import AdminAndSuperuserOnly
 from .serializers import CreateUserSerializer, UserSerializer
 
-from .models import User
 User = get_user_model()
 
 

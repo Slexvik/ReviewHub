@@ -48,7 +48,7 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         exclude = ('id', )
-        # lookup_field = 'slug' так тоже тесты проодят, у нас есть такое поле в моделях, тут точно нужно?
+        lookup_field = 'slug'
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -57,7 +57,7 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         exclude = ('id', )
-        # lookup_field = 'slug'
+        lookup_field = 'slug'
 
 
 class TitleReadSerializer(serializers.ModelSerializer):

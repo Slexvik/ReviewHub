@@ -14,7 +14,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.permissions import AdminAndSuperuserOnly
 from api.serializers import (RegistrationSerializer, TokenSerializer,
-                               UserSerializer)
+                             UserSerializer)
 
 User = get_user_model()
 

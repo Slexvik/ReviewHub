@@ -1,20 +1,20 @@
-from django.db import IntegrityError
-from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets, filters
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import ValidationError
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.permissions import AdminAndSuperuserOnly
-from .serializers import (UserSerializer, TokenSerializer,
-                          RegistrationSerializer)
+from users.serializers import (RegistrationSerializer, TokenSerializer,
+                               UserSerializer)
 
 User = get_user_model()
 
@@ -65,11 +65,12 @@ def signup_user(request):
         user, _ = User.objects.get_or_create(**serializer.validated_data)
     except IntegrityError:
         raise ValidationError(
-            'username или email заняты!', status.HTTP_400_BAD_REQUEST
+            'Пользователи с таким username или email уже существуют',
+            status.HTTP_400_BAD_REQUEST,
         )
     confirmation_code = default_token_generator.make_token(user)
     send_mail(
-        subject='Регистрация в проекте YaMDb.',
+        subject='Регистрация на YaMDb.',
         message=f'Ваш код подтверждения: {confirmation_code}',
         from_email=settings.DEFAULT_EMAIL,
         recipient_list=[user.email]
@@ -96,35 +97,3 @@ def create_token(request):
             {'access': str(token.access_token)}, status=status.HTTP_200_OK
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# @api_view(['POST'])
-# def create_token(request):
-#     username = request.data.get('username')
-#     confirmation_code = request.data.get('confirmation_code')
-
-#     if not username or not confirmation_code:
-#         return Response(
-#             'Не заполнены обязательные поля',
-#             status=status.HTTP_400_BAD_REQUEST
-#         )
-
-#     if not User.objects.filter(username=username).exists():
-#         return Response(
-#             'Имя пользователя неверное',
-#             status=status.HTTP_404_NOT_FOUND
-#         )
-
-#     user = User.objects.get(username=username)
-
-#     if user.confirmation_code == confirmation_code:
-#         token = AccessToken.for_user(user)
-#         return Response(
-#             {
-#                 'access': str(token)
-#             }
-#         )
-
-#     return Response(
-#         'Код подтверждения неверен',
-#         status=status.HTTP_400_BAD_REQUEST
-#     )

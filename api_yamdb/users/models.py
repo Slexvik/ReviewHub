@@ -35,6 +35,10 @@ class User(AbstractUser):
         verbose_name = 'Пользователя'
         verbose_name_plural = 'пользователи'
         ordering = ('username',)
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(username='me'), name='name_not_me')
+        ]
 
     @property
     def is_admin(self):

@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .validators import ValidateUsername
+
+from users.validators import ValidateUsername
 
 User = get_user_model()
 
@@ -18,15 +19,15 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def validate_role(self, role):
-        req_user = self.context['request'].user
-        user = User.objects.get(username=req_user)
+        context_user = self.context['request'].user
+        user = User.objects.get(username=context_user)
         if user.is_user:
             role = user.role
         return role
 
 
 class RegistrationSerializer(serializers.Serializer, ValidateUsername):
-    """Сериализатор регистрации User."""
+    """Сериализатор регистрации Usera."""
 
     username = serializers.CharField(required=True, max_length=150)
     email = serializers.EmailField(required=True, max_length=254)

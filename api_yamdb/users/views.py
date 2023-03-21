@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.permissions import AdminAndSuperuserOnly
-from users.serializers import (RegistrationSerializer, TokenSerializer,
+from api.serializers import (RegistrationSerializer, TokenSerializer,
                                UserSerializer)
 
 User = get_user_model()

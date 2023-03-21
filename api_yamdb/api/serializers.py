@@ -1,8 +1,5 @@
-import datetime as dt
-
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils import timezone
 from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField
 
 from reviews.models import Category, Comment, Genre, Review, Title
 
@@ -30,21 +27,13 @@ class TitleReadSerializer(serializers.ModelSerializer):
     Сериализатор для возвращения одного произведения
     или списка произведений.
     """
-    category = SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all(),
-    )
-    genre = SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all(),
-        many=True,
-    )
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(read_only=True, many=True)
     rating = serializers.IntegerField(required=False)
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating',
-                  'description', 'genre', 'category')
+        fields = '__all__'
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
@@ -52,13 +41,13 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     Сериализатор для добавления, редактирования
     и удаления произведений.
     """
-    category = SlugRelatedField(
+    category = serializers.SlugRelatedField(
         queryset=Category.objects.all(),
         slug_field='slug',
-        
+
     )
-    genre = SlugRelatedField(
-        queryset=Category.objects.all(),
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
         slug_field='slug',
         many=True,
     )
@@ -67,17 +56,22 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         model = Title
         fields = '__all__'
 
-    def validate_year(self, value):
-        """Проверка, что год создания произведения не больше текущего."""
-        year = dt.date.today().year
-        if not year < value:
+    def validate_year(self, data):
+        """Проверка года публикации произведения."""
+        year = timezone.now().year
+        if data < 0 or year < data:
             raise serializers.ValidationError(
-                'Год создания произведения не может быть больше текущего!'
+                'Проверьте год публикации произведения!'
             )
-        return value
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор для комментариев к отзывам."""
+    review = serializers.SlugRelatedField(
+        slug_field='text',
+        read_only=True,
+    )
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
@@ -89,15 +83,14 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор для отзывов к произведениям."""
+    title = serializers.SlugRelatedField(
+        slug_field='name',
+        read_only=True,
+    )
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
-    )
-    score = serializers.IntegerField(
-        validators=(
-            MinValueValidator(1, 'Оценка не может быть меньше 1.'),
-            MaxValueValidator(10, 'Оценка не может быть выше 10.'),
-        )
     )
 
     class Meta:
@@ -107,9 +100,9 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if self.context['request'].method != 'POST':
             return data
-        title = self.context['view'].kwargs.get('title')
+        title_id = self.context['request'].parser_context['kwargs']['title_id']
         author = self.context['request'].user
-        if Review.objects.filter(title=title, author=author).exists():
+        if Review.objects.filter(title=title_id, author=author).exists():
             raise serializers.ValidationError(
                 'Можно оставить только один отзыв на произведение'
             )

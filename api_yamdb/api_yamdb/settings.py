@@ -24,10 +24,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_filters',
+    'users.apps.UsersConfig',
     'reviews.apps.ReviewsConfig',
     'api.apps.ApiConfig',
-    'users.apps.UsersConfig',
-    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -131,5 +131,5 @@ SIMPLE_JWT = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'email/')  # подумать можно ли перевести на метод Path
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'email/')
 DEFAULT_EMAIL = 'review@yamdb.info'

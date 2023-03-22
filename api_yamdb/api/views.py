@@ -1,11 +1,9 @@
 from django.db.models.aggregates import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.pagination import (LimitOffsetPagination,
-                                       PageNumberPagination)
 
 from api.filters import TitleFilter
-from api.mixins import CrLiDeViewSet
+from api.utils import CategoryGenreBaseClass
 from api.permissions import IsAdminModeratorAuthorOrReadOnly, IsAdminOrReadOnly
 from api.serializers import (CategorySerializer, CommentSerializer,
                              GenreSerializer, ReviewSerializer,
@@ -13,13 +11,13 @@ from api.serializers import (CategorySerializer, CommentSerializer,
 from reviews.models import Category, Genre, Review, Title
 
 
-class CategoryViewSet(CrLiDeViewSet):
+class CategoryViewSet(CategoryGenreBaseClass):
     """Вьюсет для категорий."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class GenreViewSet(CrLiDeViewSet):
+class GenreViewSet(CategoryGenreBaseClass):
     """Вьюсет для жанров."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
@@ -31,7 +29,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         rating=Avg('reviews__score')).order_by('name')
     filterset_class = TitleFilter
     permission_classes = (IsAdminOrReadOnly,)
-    pagination_class = PageNumberPagination
 
     def get_serializer_class(self):
         """
@@ -47,7 +44,6 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для отзывов о произведениях."""
     serializer_class = ReviewSerializer
-    pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def get_queryset(self):
@@ -62,7 +58,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев к отзывам."""
     serializer_class = CommentSerializer
-    pagination_class = PageNumberPagination
     permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def get_queryset(self):

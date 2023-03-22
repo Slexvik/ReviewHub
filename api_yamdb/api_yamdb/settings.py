@@ -1,5 +1,4 @@
 from pathlib import Path
-import os
 from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -118,7 +117,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -131,5 +130,5 @@ SIMPLE_JWT = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'email/')
+EMAIL_FILE_PATH = BASE_DIR / 'email/'
 DEFAULT_EMAIL = 'review@yamdb.info'

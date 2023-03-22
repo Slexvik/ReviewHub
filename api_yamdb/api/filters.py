@@ -7,9 +7,11 @@ class TitleFilter(django_filters.FilterSet):
     """Возможность фильтрации вывода произведений."""
     genre = django_filters.CharFilter(field_name='genre__slug')
     category = django_filters.CharFilter(field_name='category__slug')
-    year = django_filters.NumberFilter(field_name='year')
-    name = django_filters.CharFilter(field_name='name', lookup_expr='contains')
+    name = django_filters.CharFilter(
+        field_name='name',
+        lookup_expr='icontains'
+    )
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = ('name', 'year', 'genre', 'category',)

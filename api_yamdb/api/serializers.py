@@ -28,14 +28,14 @@ class UserSerializer(serializers.ModelSerializer):
         return role
 
 
-class RegistrationSerializer(serializers.Serializer, ValidateUsername):
+class RegistrationSerializer(ValidateUsername, serializers.Serializer):
     """Сериализатор регистрации Usera."""
 
     username = serializers.CharField(required=True, max_length=150)
     email = serializers.EmailField(required=True, max_length=254)
 
 
-class TokenSerializer(serializers.Serializer, ValidateUsername):
+class TokenSerializer(ValidateUsername, serializers.Serializer):
     """Сериализатор токена."""
 
     username = serializers.CharField(required=True, max_length=150)

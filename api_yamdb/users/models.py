@@ -14,21 +14,16 @@ CHOICES_ROLE = (
 
 class User(AbstractUser):
     """Пользователям добавлены новые поля биография и роль."""
-    email = models.EmailField(max_length=254, unique=True)
+    email = models.EmailField(unique=True)
     bio = models.TextField(
         verbose_name='Биография',
-        max_length=512,
         blank=True,
     )
     role = models.CharField(
         max_length=20,
         choices=CHOICES_ROLE,
         default=USER_ROLE,
-        blank=True
     )
-    confirmation_code = models.CharField(
-        blank=True, max_length=6,
-        verbose_name='Код подтверждения')
 
     class Meta():
         db_table = 'user'

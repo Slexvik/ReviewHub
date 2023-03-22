@@ -42,7 +42,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == ADMIN_ROLE
+        return self.role == ADMIN_ROLE or self.is_superuser or self.is_staff
 
     @property
     def is_user(self):

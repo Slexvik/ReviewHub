@@ -4,8 +4,9 @@ import django_filters
 from django.shortcuts import get_object_or_404
 from django.db.models.aggregates import Avg
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
+from rest_framework.response import Response
 from users.permissions import (IsAdminModeratorAuthorOrReadOnly,
                                IsAdminOrReadOnly)
 from reviews.models import Category, Genre, Review, Title
@@ -87,10 +88,12 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def get_queryset(self):
+        _ = get_object_or_404(Title, id=self.kwargs.get('title_id'))
         review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
         return review.comments.all()
+        
 
     def perform_create(self, serializer):
+        _ = get_object_or_404(Title, id=self.kwargs.get('title_id'))
         review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
         serializer.save(author=self.request.user, review=review)
-

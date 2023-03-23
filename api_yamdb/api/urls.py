@@ -20,8 +20,12 @@ v1_router.register(
 )
 
 
+auth_urlpatterns = [
+    path('signup/', signup_user),
+    path('token/', create_token),
+]
+
 urlpatterns = [
-    path('v1/auth/signup/', signup_user),
-    path('v1/auth/token/', create_token),
     path('v1/', include(v1_router.urls)),
+    path('v1/auth/', include(auth_urlpatterns)),
 ]

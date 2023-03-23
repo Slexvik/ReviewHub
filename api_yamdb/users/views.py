@@ -5,13 +5,13 @@ from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status, viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from api.permissions import AdminAndSuperuserOnly
+from api.permissions import IsAdminAndSuperuserOnly
 from api.serializers import (RegistrationSerializer, TokenSerializer,
                              UserSerializer)
 
@@ -26,7 +26,7 @@ class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ('get', 'patch', 'post', 'delete')
     queryset = User.objects.all()
     lookup_field = 'username'
-    permission_classes = (AdminAndSuperuserOnly,)
+    permission_classes = (IsAdminAndSuperuserOnly,)
     filter_backends = (filters.SearchFilter,)
     serializer_class = UserSerializer
     search_fields = ('username',)
@@ -52,6 +52,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def signup_user(request):
     """
     Функция создания кода подтверждения,
@@ -77,6 +78,7 @@ def signup_user(request):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def create_token(request):
     """
     Функция выдачи токена, доступ для всех,

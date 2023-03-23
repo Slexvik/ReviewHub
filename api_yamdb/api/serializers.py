@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 from rest_framework import serializers
 
 from reviews.models import Category, Comment, Genre, Review, Title
@@ -67,7 +66,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
     """
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.IntegerField(required=False)
+    rating = serializers.IntegerField(required=False, read_only=True)
 
     class Meta:
         model = Title
@@ -94,22 +93,9 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         model = Title
         fields = '__all__'
 
-    def validate_year(self, data):
-        """Проверка года публикации произведения."""
-        year = timezone.now().year
-        if data < 0 or year < data:
-            raise serializers.ValidationError(
-                'Проверьте год публикации произведения!'
-            )
-        return data
-
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор для комментариев к отзывам."""
-    review = serializers.SlugRelatedField(
-        slug_field='text',
-        read_only=True,
-    )
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
@@ -117,15 +103,11 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'pub_date', )
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор для отзывов к произведениям."""
-    title = serializers.SlugRelatedField(
-        slug_field='name',
-        read_only=True,
-    )
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
@@ -133,7 +115,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
 
     def validate(self, data):
         if self.context['request'].method != 'POST':

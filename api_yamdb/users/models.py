@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from users.validators import ValidateUsername
+
 USER_ROLE = 'user'
 MODERATOR_ROLE = 'moderator'
 ADMIN_ROLE = 'admin'
@@ -12,12 +14,18 @@ CHOICES_ROLE = (
 )
 
 
-class User(AbstractUser):
+class User(AbstractUser, ValidateUsername):
     """Пользователям добавлены новые поля биография и роль."""
     email = models.EmailField(unique=True)
     bio = models.TextField(
         verbose_name='Биография',
         blank=True,
+    )
+    username = models.CharField(
+        verbose_name='Имя пользователя',
+        max_length=50,
+        unique=True,
+        db_index=True,
     )
     role = models.CharField(
         max_length=20,
@@ -31,8 +39,13 @@ class User(AbstractUser):
         verbose_name_plural = 'пользователи'
         ordering = ('username',)
         constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_name'
+            ),
             models.CheckConstraint(
-                check=~models.Q(username='me'), name='name_not_me')
+                check=~models.Q(username='me'), name='name_not_me'
+            ),
         ]
 
     @property

@@ -7,7 +7,7 @@ from users.validators import ValidateUsername
 User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(ValidateUsername, serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (

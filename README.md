@@ -66,7 +66,7 @@ python3 -m venv venv
 Для Windows:
 source venv\Scripts\activate
 ```
-Для Windows:
+Для Linux/macOS:
 source venv\bin\activate
 ```
 4. Установите зависимости:

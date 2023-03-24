@@ -36,7 +36,7 @@ class User(AbstractUser, ValidateUsername):
 
     class Meta():
         db_table = 'user'
-        verbose_name = 'Пользователя'
+        verbose_name = 'Пользователь'
         verbose_name_plural = 'пользователи'
         ordering = ('username',)
         constraints = [

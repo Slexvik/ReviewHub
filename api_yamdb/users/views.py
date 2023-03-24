@@ -61,7 +61,7 @@ def signup_user(request):
     if (User.objects.filter(username=username, email=email).exists()
         or not (User.objects.filter(username=username).exists()
                 or User.objects.filter(email=email).exists())):
-        user, created = User.objects.get_or_create(
+        user, _ = User.objects.get_or_create(
             username=username, email=email)
     else:
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)

@@ -1,6 +1,9 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
+from reviews.validators import validate_year
 
 User = get_user_model()
 
@@ -9,11 +12,12 @@ class Genre(models.Model):
     """Модель жанра."""
     name = models.CharField(
         verbose_name='Название жанра',
-        max_length=256
+        max_length=settings.MAX_LENGTH_NAME,
+        db_index=True,
     )
     slug = models.SlugField(
         verbose_name='Slug произведения',
-        max_length=50,
+        max_length=settings.MAX_LENGTH_SLUG,
         unique=True,
     )
 
@@ -31,11 +35,12 @@ class Category(models.Model):
     """Модель категории."""
     name = models.CharField(
         verbose_name='Название категории',
-        max_length=256,
+        max_length=settings.MAX_LENGTH_NAME,
+        db_index=True,
     )
     slug = models.SlugField(
         verbose_name='Slug категории',
-        max_length=50,
+        max_length=settings.MAX_LENGTH_SLUG,
         unique=True,
     )
 
@@ -53,21 +58,26 @@ class Title(models.Model):
     """Модель произведения."""
     name = models.CharField(
         verbose_name='Название произведения',
-        max_length=256,
+        max_length=settings.MAX_LENGTH_NAME,
+        db_index=True,
     )
-    year = models.IntegerField(
+    year = models.SmallIntegerField(
         verbose_name='Год создания произведения',
+        validators=(validate_year, ),
+        db_index=True,
     )
     description = models.TextField(
         verbose_name='Описание произведения',
         blank=True,
+        null=True,
     )
     genre = models.ManyToManyField(
         Genre,
         verbose_name='Жанр произведения',
         through='GenreTitle',
+        through_fields=('title', 'genre'),
         related_name='titles',
-        blank=True,
+        db_index=True,
     )
     category = models.ForeignKey(
         Category,
@@ -76,6 +86,7 @@ class Title(models.Model):
         blank=True,
         null=True,
         related_name='titles',
+        db_index=True,
     )
 
     class Meta:
@@ -103,6 +114,8 @@ class GenreTitle(models.Model):
 
     class Meta:
         db_table = 'genre_title'
+        verbose_name = 'Связь произведения и жанра'
+        verbose_name_plural = 'Связи произведений и жанров'
 
 
 class Review(models.Model):

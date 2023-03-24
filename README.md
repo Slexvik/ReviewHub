@@ -50,32 +50,69 @@
 
 Для запуска приложения проделайте следующие шаги:
 
-1. Склонируйте репозиторий.
+1. Склонируйте репозиторий:
+```
+git clone git@github.com:Slexvik/api_yamdb.git
+```
 
 2. Перейдите в папку с кодом и создайте виртуальное окружение:
 ```
+Для Windows:
+cd api_yamdb
 python -m venv venv
+```
+```
+Для Linux/macOS:
+cd api_yamdb
+python3 -m venv venv
 ```
 
 3. Активируйте виртуальное окружение:
 ```
-source venv\scripts\activate
+Для Windows:
+source venv\Scripts\activate
+```
+```
+Для Linux/macOS:
+source venv\bin\activate
 ```
 4. Установите зависимости:
 ```
+Для Windows:
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
+```
+```
+Для Linux/macOS:
+python3 -m pip install --upgrade pip
+python3 -m pip install -r requirements.txt
 ```
 5. Выполните миграции:
 ```
+Для Windows:
 python manage.py migrate
+```
+```
+Для Linux/macOS:
+python3 manage.py migrate
 ```
 6. Создайте суперпользователя:
 ```
+Для Windows:
 python manage.py createsuperuser
+```
+```
+Для Linux/macOS:
+python3 manage.py createsuperuser
 ```
 7. Запустите сервер:
 ```
-python manage.py runserver
+Для Windows:
+python3 manage.py runserver
+```
+```
+Для Linux/macOS:
+python3 manage.py runserver
 ```
 
 ## Документация

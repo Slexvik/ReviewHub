@@ -1,7 +1,7 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
-class AdminAndSuperuserOnly(BasePermission):
+class IsAdminAndSuperuserOnly(BasePermission):
     """
     Разрешение только для пользователей:
     администратор и суперпользователь.
@@ -10,7 +10,6 @@ class AdminAndSuperuserOnly(BasePermission):
         return (
             request.user.is_authenticated and (
                 request.user.is_admin
-                or request.user.is_superuser
             )
         )
 
@@ -32,7 +31,7 @@ class IsAdminModeratorAuthorOrReadOnly(BasePermission):
 class IsAdminOrReadOnly(BasePermission):
     """
     Разрешает получения списка всем,
-    редактирование только  администратор и суперпользователь.
+    на редактирование только  администратор.
     """
     def has_permission(self, request, view):
         return (request.method in SAFE_METHODS

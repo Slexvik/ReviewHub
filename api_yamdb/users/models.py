@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from users.validators import ValidateUsername
+
 USER_ROLE = 'user'
 MODERATOR_ROLE = 'moderator'
 ADMIN_ROLE = 'admin'
@@ -12,37 +14,44 @@ CHOICES_ROLE = (
 )
 
 
-class User(AbstractUser):
+class User(AbstractUser, ValidateUsername):
     """Пользователям добавлены новые поля биография и роль."""
-    email = models.EmailField(max_length=254, unique=True)
+    username = models.CharField(
+        verbose_name='Имя пользователя',
+        max_length=150,
+        unique=True,
+        db_index=True,
+    )
+    email = models.EmailField(unique=True)
     bio = models.TextField(
         verbose_name='Биография',
-        max_length=512,
         blank=True,
     )
     role = models.CharField(
+        verbose_name='Права доступа',
         max_length=20,
         choices=CHOICES_ROLE,
         default=USER_ROLE,
-        blank=True
     )
-    confirmation_code = models.CharField(
-        blank=True, max_length=6,
-        verbose_name='Код подтверждения')
 
     class Meta():
         db_table = 'user'
-        verbose_name = 'Пользователя'
+        verbose_name = 'Пользователь'
         verbose_name_plural = 'пользователи'
         ordering = ('username',)
         constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_name'
+            ),
             models.CheckConstraint(
-                check=~models.Q(username='me'), name='name_not_me')
+                check=~models.Q(username='me'), name='name_not_me'
+            ),
         ]
 
     @property
     def is_admin(self):
-        return self.role == ADMIN_ROLE
+        return self.role == ADMIN_ROLE or self.is_superuser or self.is_staff
 
     @property
     def is_user(self):

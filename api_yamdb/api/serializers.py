@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 from rest_framework import serializers
 
 from reviews.models import Category, Comment, Genre, Review, Title
@@ -8,7 +7,7 @@ from users.validators import ValidateUsername
 User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(ValidateUsername, serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
@@ -17,25 +16,32 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'bio',
-            'role'
+            'role',
         )
 
-    def validate_role(self, role):
-        context_user = self.context['request'].user
-        user = User.objects.get(username=context_user)
-        if user.is_user:
-            role = user.role
-        return role
+
+class UserRoleSerializer(ValidateUsername, serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
+        read_only_fields = ('role',)
 
 
-class RegistrationSerializer(serializers.Serializer, ValidateUsername):
+class RegistrationSerializer(ValidateUsername, serializers.Serializer):
     """Сериализатор регистрации Usera."""
 
     username = serializers.CharField(required=True, max_length=150)
     email = serializers.EmailField(required=True, max_length=254)
 
 
-class TokenSerializer(serializers.Serializer, ValidateUsername):
+class TokenSerializer(ValidateUsername, serializers.Serializer):
     """Сериализатор токена."""
 
     username = serializers.CharField(required=True, max_length=150)
@@ -67,7 +73,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
     """
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.IntegerField(required=False)
+    rating = serializers.IntegerField(required=False, read_only=True)
 
     class Meta:
         model = Title
@@ -94,22 +100,9 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         model = Title
         fields = '__all__'
 
-    def validate_year(self, data):
-        """Проверка года публикации произведения."""
-        year = timezone.now().year
-        if data < 0 or year < data:
-            raise serializers.ValidationError(
-                'Проверьте год публикации произведения!'
-            )
-        return data
-
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор для комментариев к отзывам."""
-    review = serializers.SlugRelatedField(
-        slug_field='text',
-        read_only=True,
-    )
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
@@ -117,15 +110,11 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'pub_date', )
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор для отзывов к произведениям."""
-    title = serializers.SlugRelatedField(
-        slug_field='name',
-        read_only=True,
-    )
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
@@ -133,7 +122,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
 
     def validate(self, data):
         if self.context['request'].method != 'POST':

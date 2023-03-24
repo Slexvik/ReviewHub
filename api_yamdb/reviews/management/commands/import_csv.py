@@ -1,3 +1,4 @@
+import datetime
 import sqlite3
 
 import pandas as pd
@@ -35,7 +36,17 @@ class Command(BaseCommand):
                     },
                     inplace=True,
                 )
-                df.columns
+                if table == 'user':
+                    df = df.assign(
+                        password='12345678',
+                        is_superuser=False,
+                        is_staff=False,
+                        is_active=True,
+                        date_joined=datetime.datetime.now(),
+                        first_name='null',
+                        last_name='null',
+                        bio='null'
+                    )
                 df.to_sql(
                     table,
                     con,

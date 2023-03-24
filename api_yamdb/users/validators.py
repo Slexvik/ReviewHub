@@ -8,10 +8,13 @@ class ValidateUsername:
     """Валидаторы для username."""
 
     def validate_username(self, username):
-        if not re.match(r'[\w.@+-]+\Z', username):
+        pattern = re.compile(r'^[\w.@+-]+')
+
+        if not re.fullmatch(pattern, username):
+            symbols_forbidden = ''.join(re.split(pattern, username))
             raise ValidationError(
-                _(f'{username} не должно включать запрещенные символы!')
+                _(f'Вы использовали запрещенные символы: {symbols_forbidden}!')
             )
         if username == 'me':
-            raise ValidationError('Имя пользователя "me" не разрешено.')
+            raise ValidationError('Имя пользователя "me" не разрешено!')
         return username

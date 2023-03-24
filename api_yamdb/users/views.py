@@ -2,11 +2,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
@@ -63,14 +61,15 @@ def signup_user(request):
     """
     serializer = RegistrationSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    try:
-        user, _ = User.objects.get_or_create(**serializer.validated_data)
-    except IntegrityError:
-        raise ValidationError(
-            'Пользователи с таким username или email уже существуют',
-            status.HTTP_400_BAD_REQUEST,
-        )
-    user, _ = User.objects.get_or_create(**serializer.validated_data)
+    email = serializer.validated_data.get('email')
+    username = serializer.validated_data.get('username')
+    if (User.objects.filter(username=username, email=email).exists()
+        or not (User.objects.filter(username=username).exists()
+                or User.objects.filter(email=email).exists())):
+        user, created = User.objects.get_or_create(
+            username=username, email=email)
+    else:
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
     confirmation_code = default_token_generator.make_token(user)
     send_mail(
         subject='Регистрация на YaMDb.',
@@ -79,21 +78,6 @@ def signup_user(request):
         recipient_list=[user.email]
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
-    # email = serializer.validated_data.get('email')
-    # username = serializer.validated_data.get('username')
-    # if not email or username:
-    #     user, _ = User.objects.get_or_create(**serializer.validated_data)
-    #     confirmation_code = default_token_generator.make_token(user)
-    #     send_mail(
-    #         subject='Регистрация на YaMDb.',
-    #         message=f'Ваш код подтверждения: {confirmation_code}',
-    #         from_email=settings.DEFAULT_EMAIL,
-    #         recipient_list=[user.email]
-    #     )
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
-    # else:
-    #     # serializer.save()
-    #     return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])

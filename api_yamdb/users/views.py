@@ -38,17 +38,12 @@ class UserViewSet(ValidateUsername, viewsets.ModelViewSet):
     def me(self, request):
         user = get_object_or_404(User, username=self.request.user)
         serializer = UserSerializer(user)
-        if request.method == "GET":
+        if request.method == 'GET':
             return Response(serializer.data)
-        if not (self.request.user.is_admin or self.request.user.is_superuser):
-            serializer = UserRoleSerializer(user, data=request.data,
-                                            partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data)
-        serializer = UserSerializer(user, data=request.data, partial=True)
+        serializer = UserRoleSerializer(user, data=request.data,
+                                        partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(role=user.role, partial=True)
         return Response(serializer.data)
 
 

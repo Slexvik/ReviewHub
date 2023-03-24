@@ -114,6 +114,8 @@ class GenreTitle(models.Model):
 
     class Meta:
         db_table = 'genre_title'
+        verbose_name = 'Связь произведения и жанра'
+        verbose_name_plural = 'Связи произведений и жанров'
 
 
 class Review(models.Model):

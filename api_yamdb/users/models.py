@@ -28,6 +28,7 @@ class User(AbstractUser, ValidateUsername):
         blank=True,
     )
     role = models.CharField(
+        verbose_name='Права доступа',
         max_length=20,
         choices=CHOICES_ROLE,
         default=USER_ROLE,

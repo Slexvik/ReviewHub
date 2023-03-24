@@ -16,15 +16,22 @@ class UserSerializer(ValidateUsername, serializers.ModelSerializer):
             'first_name',
             'last_name',
             'bio',
-            'role'
+            'role',
         )
 
-    def validate_role(self, role):
-        context_user = self.context['request'].user
-        user = User.objects.get(username=context_user)
-        if user.is_user:
-            role = user.role
-        return role
+
+class UserRoleSerializer(ValidateUsername, serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
+        read_only_fields = ('role',)
 
 
 class RegistrationSerializer(ValidateUsername, serializers.Serializer):

@@ -9,16 +9,16 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-
+from rest_framework_simplejwt.tokens import AccessToken
+from users.validators import ValidateUsername
 from api.permissions import IsAdminAndSuperuserOnly
 from api.serializers import (RegistrationSerializer, TokenSerializer,
-                             UserSerializer)
+                             UserSerializer, UserRoleSerializer)
 
 User = get_user_model()
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(ValidateUsername, viewsets.ModelViewSet):
     """
     Вьюсет для создания юзера,
     пользователя может добавить администратор.
@@ -40,14 +40,17 @@ class UserViewSet(viewsets.ModelViewSet):
     def me(self, request):
         user = get_object_or_404(User, username=self.request.user)
         serializer = UserSerializer(user)
-        if request.method == 'PATCH':
-            serializer = UserSerializer(
-                user, data=request.data,
-                partial=True,
-                context={'request': request}
-            )
+        if request.method == "GET":
+            return Response(serializer.data)
+        if not (self.request.user.is_admin or self.request.user.is_superuser):
+            serializer = UserRoleSerializer(user, data=request.data,
+                                            partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            return Response(serializer.data)
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)
 
 
@@ -67,6 +70,7 @@ def signup_user(request):
             'Пользователи с таким username или email уже существуют',
             status.HTTP_400_BAD_REQUEST,
         )
+    user, _ = User.objects.get_or_create(**serializer.validated_data)
     confirmation_code = default_token_generator.make_token(user)
     send_mail(
         subject='Регистрация на YaMDb.',
@@ -75,6 +79,21 @@ def signup_user(request):
         recipient_list=[user.email]
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
+    # email = serializer.validated_data.get('email')
+    # username = serializer.validated_data.get('username')
+    # if not email or username:
+    #     user, _ = User.objects.get_or_create(**serializer.validated_data)
+    #     confirmation_code = default_token_generator.make_token(user)
+    #     send_mail(
+    #         subject='Регистрация на YaMDb.',
+    #         message=f'Ваш код подтверждения: {confirmation_code}',
+    #         from_email=settings.DEFAULT_EMAIL,
+    #         recipient_list=[user.email]
+    #     )
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
+    # else:
+    #     # serializer.save()
+    #     return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -92,7 +111,7 @@ def create_token(request):
     if default_token_generator.check_token(
             user, serializer.validated_data['confirmation_code']
     ):
-        token = RefreshToken.for_user(user)
+        token = AccessToken.for_user(user)
         return Response(
             {'access': str(token.access_token)}, status=status.HTTP_200_OK
         )

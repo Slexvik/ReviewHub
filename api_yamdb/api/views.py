@@ -18,7 +18,7 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              GenreSerializer, RegistrationSerializer,
                              ReviewSerializer, TitleReadSerializer,
                              TitleWriteSerializer, TokenSerializer,
-                             UserRoleSerializer, UserSerializer)
+                             UserMeSerializer, UserSerializer)
 from api.utils import CategoryGenreBaseClass
 from reviews.models import Category, Genre, Review, Title
 from users.validators import ValidateUsername
@@ -50,8 +50,8 @@ class UserViewSet(ValidateUsername, viewsets.ModelViewSet):
         serializer = UserSerializer(user)
         if request.method == 'GET':
             return Response(serializer.data)
-        serializer = UserRoleSerializer(user, data=request.data,
-                                        partial=True)
+        serializer = UserMeSerializer(user, data=request.data,
+                                      partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(role=user.role, partial=True)
         return Response(serializer.data)
@@ -68,9 +68,9 @@ def signup_user(request):
     serializer.is_valid(raise_exception=True)
     email = serializer.validated_data.get('email')
     username = serializer.validated_data.get('username')
-    if (User.objects.filter(username=username, email=email).exists()
-        or not (User.objects.filter(username=username).exists()
-                or User.objects.filter(email=email).exists())):
+    user_username = User.objects.filter(username=username).first()
+    user_email = User.objects.filter(email=email).first()
+    if user_username == user_email:
         user, _ = User.objects.get_or_create(
             username=username, email=email)
     else:

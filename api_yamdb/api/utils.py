@@ -15,3 +15,10 @@ class CategoryGenreBaseClass(mixins.CreateModelMixin,
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
     search_fields = ('name',)
+
+
+class NoPutModelViewSet(viewsets.ModelViewSet):
+    """
+    Базовый вьюсет, запрещающий метод PUT.
+    """
+    http_method_names = ('get', 'patch', 'post', 'delete')

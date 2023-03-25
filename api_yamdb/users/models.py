@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -14,13 +15,12 @@ CHOICES_ROLE = (
 )
 
 
-class User(AbstractUser, ValidateUsername):
+class User(ValidateUsername, AbstractUser):
     """Пользователям добавлены новые поля биография и роль."""
     username = models.CharField(
         verbose_name='Имя пользователя',
-        max_length=150,
+        max_length=settings.MAX_LENGTH_USERNAME,
         unique=True,
-        db_index=True,
     )
     email = models.EmailField(unique=True)
     bio = models.TextField(
@@ -52,10 +52,6 @@ class User(AbstractUser, ValidateUsername):
     @property
     def is_admin(self):
         return self.role == ADMIN_ROLE or self.is_superuser or self.is_staff
-
-    @property
-    def is_user(self):
-        return self.role == USER_ROLE
 
     @property
     def is_moderator(self):

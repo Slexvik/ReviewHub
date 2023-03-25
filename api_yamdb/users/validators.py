@@ -16,5 +16,5 @@ class ValidateUsername:
                 f'Имя пользователя содержит запрещенные символы: {symbols}'
             )
         if username in settings.INVALID_FORBIDDEN:
-            raise ValidationError('Имя пользователя "me" не разрешено!')
+            raise ValidationError(f'Имя пользователя {username} не разрешено!')
         return username

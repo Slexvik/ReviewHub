@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -18,7 +19,7 @@ class User(ValidateUsername, AbstractUser):
     """Пользователям добавлены новые поля биография и роль."""
     username = models.CharField(
         verbose_name='Имя пользователя',
-        max_length=150,
+        max_length=settings.MAX_LENGTH_USERNAME,
         unique=True,
     )
     email = models.EmailField(unique=True)

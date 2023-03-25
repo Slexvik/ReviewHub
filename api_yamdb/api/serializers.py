@@ -21,17 +21,9 @@ class UserSerializer(ValidateUsername, serializers.ModelSerializer):
         )
 
 
-class UserMeSerializer(ValidateUsername, serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'username',
-            'email',
-            'first_name',
-            'last_name',
-            'bio',
-            'role',
-        )
+class UserMeSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
+
         read_only_fields = ('role',)
 
 

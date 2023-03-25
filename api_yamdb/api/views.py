@@ -69,9 +69,9 @@ def signup_user(request):
     serializer.is_valid(raise_exception=True)
     email = serializer.validated_data.get('email')
     username = serializer.validated_data.get('username')
-    if (User.objects.filter(username=username, email=email).exists()
-        or not (User.objects.filter(username=username).exists()
-                or User.objects.filter(email=email).exists())):
+    user_username = User.objects.filter(username=username).first()
+    user_email = User.objects.filter(email=email).first()
+    if user_username == user_email:
         user, _ = User.objects.get_or_create(
             username=username, email=email)
     else:

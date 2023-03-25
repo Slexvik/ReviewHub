@@ -18,7 +18,7 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              GenreSerializer, RegistrationSerializer,
                              ReviewSerializer, TitleReadSerializer,
                              TitleWriteSerializer, TokenSerializer,
-                             UserRoleSerializer, UserSerializer)
+                             UserMeSerializer, UserSerializer)
 from api.utils import CategoryGenreBaseClass
 from reviews.models import Category, Genre, Review, Title
 from users.validators import ValidateUsername
@@ -50,7 +50,7 @@ class UserViewSet(ValidateUsername, viewsets.ModelViewSet):
         serializer = UserSerializer(user)
         if request.method == 'GET':
             return Response(serializer.data)
-        serializer = UserRoleSerializer(user, data=request.data,
+        serializer = UserMeSerializer(user, data=request.data,
                                         partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(role=user.role, partial=True)

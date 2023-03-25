@@ -4,7 +4,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models.aggregates import Avg
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, status, viewsets
+from rest_framework import filters, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -20,19 +20,18 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              ReviewSerializer, TitleReadSerializer,
                              TitleWriteSerializer, TokenSerializer,
                              UserMeSerializer, UserSerializer)
-from api.utils import CategoryGenreBaseClass
+from api.utils import CategoryGenreBaseClass, NoPutModelViewSet
 from reviews.models import Category, Genre, Review, Title
 from users.validators import ValidateUsername
 
 User = get_user_model()
 
 
-class UserViewSet(ValidateUsername, viewsets.ModelViewSet):
+class UserViewSet(ValidateUsername, NoPutModelViewSet):
     """
     Вьюсет для создания юзера,
     пользователя может добавить администратор.
     """
-    http_method_names = ('get', 'patch', 'post', 'delete')
     queryset = User.objects.all()
     lookup_field = 'username'
     permission_classes = (IsAdminAndSuperuserOnly,)
@@ -122,7 +121,7 @@ class GenreViewSet(CategoryGenreBaseClass):
     serializer_class = GenreSerializer
 
 
-class TitleViewSet(viewsets.ModelViewSet):
+class TitleViewSet(NoPutModelViewSet):
     """Вьюсет для произведений."""
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')).order_by('name')
@@ -140,7 +139,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleWriteSerializer
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
+class ReviewViewSet(NoPutModelViewSet):
     """Вьюсет для отзывов о произведениях."""
     serializer_class = ReviewSerializer
     permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
@@ -154,7 +153,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, title=title)
 
 
-class CommentViewSet(viewsets.ModelViewSet):
+class CommentViewSet(NoPutModelViewSet):
     """Вьюсет для комментариев к отзывам."""
     serializer_class = CommentSerializer
     permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
@@ -163,7 +162,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         title_id = self.kwargs.get('title_id')
         review_id = self.kwargs.get('review_id')
         return get_object_or_404(Review, id=review_id, title=title_id)
-    
+
     def get_queryset(self):
         review = self.get_review()
         return review.comments.all()

@@ -1,20 +1,20 @@
 import re
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
 
 
 class ValidateUsername:
     """Валидаторы для username."""
 
     def validate_username(self, username):
-        pattern = re.compile(r'^[\w.@+-]+')
-
-        if not re.fullmatch(pattern, username):
-            symbols_forbidden = ''.join(re.split(pattern, username))
+        pattern = re.compile(r'[\w.@+-]+')
+        symbols_forbidden = re.sub(pattern, '', username)
+        if symbols_forbidden:
+            symbols = ", ".join(symbols_forbidden)
             raise ValidationError(
-                _(f'Вы использовали запрещенные символы: {symbols_forbidden}!')
+                f'Имя пользователя содержит запрещенные символы: {symbols}'
             )
-        if username == 'me':
+        if username in settings.INVALID_FORBIDDEN:
             raise ValidationError('Имя пользователя "me" не разрешено!')
         return username

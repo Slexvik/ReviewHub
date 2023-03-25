@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
@@ -22,20 +23,25 @@ class UserSerializer(ValidateUsername, serializers.ModelSerializer):
 
 class UserMeSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
+
         read_only_fields = ('role',)
 
 
 class RegistrationSerializer(ValidateUsername, serializers.Serializer):
     """Сериализатор регистрации Usera."""
 
-    username = serializers.CharField(required=True, max_length=150)
+    username = serializers.CharField(
+        required=True, max_length=settings.MAX_LENGTH_USERNAME
+    )
     email = serializers.EmailField(required=True, max_length=254)
 
 
 class TokenSerializer(ValidateUsername, serializers.Serializer):
     """Сериализатор токена."""
 
-    username = serializers.CharField(required=True, max_length=150)
+    username = serializers.CharField(
+        required=True, max_length=settings.MAX_LENGTH_USERNAME
+    )
     confirmation_code = serializers.CharField(required=True)
 
 
@@ -64,7 +70,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
     """
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.IntegerField(required=False, read_only=True)
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title

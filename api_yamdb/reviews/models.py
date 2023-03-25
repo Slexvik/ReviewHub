@@ -77,7 +77,6 @@ class Title(models.Model):
         through='GenreTitle',
         through_fields=('title', 'genre'),
         related_name='titles',
-        db_index=True,
     )
     category = models.ForeignKey(
         Category,
@@ -86,7 +85,6 @@ class Title(models.Model):
         blank=True,
         null=True,
         related_name='titles',
-        db_index=True,
     )
 
     class Meta:

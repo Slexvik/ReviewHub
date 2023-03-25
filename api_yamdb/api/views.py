@@ -6,6 +6,7 @@ from django.db.models.aggregates import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
@@ -49,12 +50,12 @@ class UserViewSet(ValidateUsername, viewsets.ModelViewSet):
         user = get_object_or_404(User, username=self.request.user)
         serializer = UserSerializer(user)
         if request.method == 'GET':
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         serializer = UserMeSerializer(user, data=request.data,
                                       partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save(role=user.role, partial=True)
-        return Response(serializer.data)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -74,7 +75,9 @@ def signup_user(request):
         user, _ = User.objects.get_or_create(
             username=username, email=email)
     else:
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        raise ValidationError(f'Пользователь с таким {username} или'
+                              f'адресом {email} уже существует.')
+
     confirmation_code = default_token_generator.make_token(user)
     send_mail(
         subject='Регистрация на YaMDb.',
@@ -102,7 +105,7 @@ def create_token(request):
     ):
         token = AccessToken.for_user(user)
         return Response(
-            {'access': str(token.access_token)}, status=status.HTTP_200_OK
+            {'access': str(token)}, status=status.HTTP_200_OK
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -156,14 +159,15 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
-    def get_queryset(self):
+    def get_review(self):
         title_id = self.kwargs.get('title_id')
         review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id, title=title_id)
+        return get_object_or_404(Review, id=review_id, title=title_id)
+    
+    def get_queryset(self):
+        review = self.get_review()
         return review.comments.all()
 
     def perform_create(self, serializer):
-        title_id = self.kwargs.get('title_id')
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id, title=title_id)
+        review = self.get_review()
         serializer.save(author=self.request.user, review=review)

@@ -78,42 +78,26 @@ source venv\bin\activate
 ```
 4. Установите зависимости:
 ```
-Для Windows:
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
-```
-Для Linux/macOS:
-python3 -m pip install --upgrade pip
-python3 -m pip install -r requirements.txt
-```
 5. Выполните миграции:
 ```
-Для Windows:
 python manage.py migrate
 ```
+6. Импортируйте данные из csv:
 ```
-Для Linux/macOS:
-python3 manage.py migrate
+python manage.py import_csv
 ```
-6. Создайте суперпользователя:
+7. Создайте суперпользователя:
 ```
-Для Windows:
 python manage.py createsuperuser
 ```
+8. Запустите сервер:
 ```
-Для Linux/macOS:
-python3 manage.py createsuperuser
+python manage.py runserver
 ```
-7. Запустите сервер:
-```
-Для Windows:
-python3 manage.py runserver
-```
-```
-Для Linux/macOS:
-python3 manage.py runserver
-```
+
 
 ## Документация
 

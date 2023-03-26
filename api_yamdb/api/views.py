@@ -74,7 +74,7 @@ def signup_user(request):
         user, _ = User.objects.get_or_create(
             username=username, email=email)
     else:
-        raise ValidationError( 
+        raise ValidationError(
             'Пользователи с таким username или email уже существуют',
             status.HTTP_400_BAD_REQUEST,
         )

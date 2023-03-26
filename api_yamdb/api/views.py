@@ -47,8 +47,8 @@ class UserViewSet(ValidateUsername, NoPutModelViewSet):
     )
     def me(self, request):
         user = get_object_or_404(User, username=self.request.user)
-        serializer = UserSerializer(user)
         if request.method == 'GET':
+            serializer = UserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         serializer = UserMeSerializer(user, data=request.data,
                                       partial=True)
@@ -74,8 +74,10 @@ def signup_user(request):
         user, _ = User.objects.get_or_create(
             username=username, email=email)
     else:
-        raise ValidationError(f'Пользователь с таким {username} или'
-                              f'адресом {email} уже существует.')
+        raise ValidationError( 
+            'Пользователи с таким username или email уже существуют',
+            status.HTTP_400_BAD_REQUEST,
+        )
 
     confirmation_code = default_token_generator.make_token(user)
     send_mail(
@@ -106,7 +108,10 @@ def create_token(request):
         return Response(
             {'access': str(token)}, status=status.HTTP_200_OK
         )
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(
+        {'confirmation_code': 'Неверный код подтверждения'},
+        status=status.HTTP_400_BAD_REQUEST
+    )
 
 
 class CategoryViewSet(CategoryGenreBaseClass):

@@ -102,3 +102,10 @@ python manage.py runserver
 ## Документация
 
  http://127.0.0.1:8000/redoc/
+
+
+ ## Авторы проекта:
+
+- Auth/Users: Алексей [Github](https://github.com/Slexvik)
+- Titles/Category/Genre: Константин [Github](https://github.com/realkast7)
+- Reviews/Comments: Ольга [Github](https://github.co/Xiaoan2805)

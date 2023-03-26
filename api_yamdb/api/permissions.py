@@ -24,7 +24,6 @@ class IsAdminModeratorAuthorOrReadOnly(BasePermission):
         return (request.method in SAFE_METHODS
                 or request.user.is_admin
                 or request.user.is_moderator
-                or request.user.is_superuser
                 or obj.author == request.user)
 
 

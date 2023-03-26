@@ -17,11 +17,7 @@ CHOICES_ROLE = (
 
 class User(ValidateUsername, AbstractUser):
     """Пользователям добавлены новые поля биография и роль."""
-    username = models.CharField(
-        verbose_name='Имя пользователя',
-        max_length=settings.MAX_LENGTH_USERNAME,
-        unique=True,
-    )
+
     email = models.EmailField(unique=True)
     bio = models.TextField(
         verbose_name='Биография',

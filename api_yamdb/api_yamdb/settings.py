@@ -1,13 +1,19 @@
 from pathlib import Path
 from datetime import timedelta
 
+import environ
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs'
+env = environ.Env(
+    SECRET_KEY=(str, 'mysecretkey'),
+    DEBUG=(bool, False)
+)
+environ.Env.read_env(BASE_DIR / '.env')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = env('SECRET_KEY')
+
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = ['*']
 
